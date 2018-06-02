@@ -1,15 +1,15 @@
 var mysql_config = {
-'host': '0.0.0.0',
+'host': 'localhost',
 'port': 3306,
-'user': 'root',
+'user': 'ufinity',
 'database': 'UfinityDb',
-'password': 'u51n17y'
+'password': 'U51n17yDbPa$sword'
 }
 
 var table_names={
-    'student':'student',
-    'teacher':'teacher',
-    'registered': 'register'
+    'student':'students',
+    'teacher':'teachers',
+    'register': 'registration'
 }
 
 module.exports={

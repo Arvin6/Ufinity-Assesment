@@ -2,57 +2,72 @@ import config from './config'
 
 // Mysql
 let mysql_connection = require('mysql')
+var myConnection = mysql_connection.createPool(config.mysql);
 
-export default class db{
+class QueryBuilder {
     constructor(){
         this.query='';    
-        // Pool connection object
-        this.connection = mysql_connection.createPool({
-            'host': mysql_config.mysql.host,
-            'user': mysql_config.mysql.user,
-            'password': config.mysql.password,
-            'database': config.mysql.database
-        });
-    }
-
-    findByMail(table){
-        // QueryBuilder
-        this.query = 'Select * from ${table} where mail=?';
         return this;
     }
 
-    findIntersection(table){
+    findByAttribute(table, attribute){
         // QueryBuilder
-        this.query = 'Select * from ${table1} Join ${table2} On ${table1}.? = ${table2}.? Join ${table3} On ${table1}.? = table3.?';
+        this.query = `SELECT * FROM ${table} WHERE ${attribute}=?`;
+        return this;
+    }
+
+    joinTables(table1, table2, on, return_columns){
+        if (return_columns === null) return_columns = '*';
+        if (this.query === '') {
+            this.query = `SELECT ${return_columns} FROM ${table1} JOIN ${table2} ON ${on}`;
+            return this;         
+        }
+        this.query = this.query + ` JOIN ${table2} ON ${on}`
         return this;
     }
 
     insert(table){
-        this.query = 'Insert into ${table} Values(?)'
+        this.query = `INSERT INTO ${table}(??) VALUES(?)`
         return this;
     }
 
-    insertIfNotExists(table){
+    upsert(table){
         // QueryBuilder
-        Exists_query = '(Select * from ${table} where ? = ? And ? = ?)';
-        this.query = 'Insert into ${table} Values(?) Where Not Exists '+Exists_query;
+        this.query = `INSERT INTO ${table}(??)VALUES(?,?) ON DUPLICATE KEY UPDATE ??=?, ??=?`;
+        return this;
+    }
+
+    where(condition){
+        this.query = this.query + ' WHERE '+condition;
         return this;
     }
 
     update(table){
         // QueryBuilder
-        this.query = 'Update ${table} set ? = ? where mail = ?';
+        this.query = `Update ${table} set ?? = ? where mail = ?`;
         return this;
     }
 
     execute(data, callback){
         // Runner
-        this.connection.query(
-            this.query, [...data], function(err, result){
-                if (err){
-                    return callback(err, null);
-                }
-                return callback(null, result);
+        myConnection.getConnection( (error, connection)=>{
+            if (error) {
+                console.log(error)
+                throw error;
+            }
+            let formatted_query = connection.format(this.query, data)
+            connection.query(
+                formatted_query, function(err, result){
+                    if (err){
+                        console.log(err);
+                        connection.release();
+                        return callback(err, null);
+                    }
+                    connection.release();
+                    return callback(null, JSON.parse(JSON.stringify(result)));
             });
+        });
     }
 }
+
+module.exports = QueryBuilder;
