@@ -1,8 +1,10 @@
 import {_} from 'lodash'
 import db from '../db'
 
-import config from '../config'
-import schemas from '../schema'
+import config from '../config/config'
+import schemas from '../config/schema'
+import UfinityError from './Customerror';
+
 
 export default class Registration {
     constructor(data) {
@@ -27,7 +29,7 @@ export default class Registration {
                           teacher_id.toString(), this.data[teacher_id] ],
                             (error, result) =>{
                                 if (error) {
-                                return reject(`Student cannnot be registered to teacher`)
+                                return reject(new UfinityError(`Student cannnot be registered to teacher`));
                             }
                                 resolve (result);
                         });
@@ -59,21 +61,23 @@ export default class Registration {
         // The columns to return
         let return_columns = `${studentTable}.${studentMailColumn}`;
         // Where condition to filter out the necessary condition to check suspension and teacher's subscription list
-        let where_condition = `${teacherTable}.${teacherMailColumn} = '${teacherMailId}' AND ${studentTable}.${studentIsSuspended}=false`
+        let where_condition 
         
         // Query ops
-        // let db_cn = new db();
+        let db_cn = new db();
         // Fetch from DB
-        let db_cn = new db()
         return new Promise( (resolve, reject) => {
             db_cn.joinTables(teacherTable, registerTable, teacherOnCondition, return_columns)
                     .joinTables(registerTable, studentTable, studentOnCondition, null)
-                        .where(where_condition)
-                            .execute([], function (error, result){
-                                if (error){
-                                console.log(error);
-                                return reject('There was a problem getting registered students.');
-                                }
+                        .where()
+                            .and()
+                            .additionalValues()
+                            .execute([`${teacherTable}.${teacherMailColumn}`,`${teacherMailId}`, `${studentTable}.${studentIsSuspended}`, false],
+                                 function (error, result){
+                                    if (error){
+                                        console.log(error);
+                                        return reject('There was a problem getting registered students.');
+                                    }
                                 resolve(result);
                             });
             });

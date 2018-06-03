@@ -1,4 +1,4 @@
-import config from './config'
+import config from './config/config'
 
 // Mysql
 let mysql_connection = require('mysql')
@@ -7,6 +7,11 @@ var myConnection = mysql_connection.createPool(config.mysql);
 class QueryBuilder {
     constructor(){
         this.query='';    
+        return this;
+    }
+
+    delete(table){
+        this.query = `DELETE FROM ${table}`;
         return this;
     }
 
@@ -22,12 +27,12 @@ class QueryBuilder {
             this.query = `SELECT ${return_columns} FROM ${table1} JOIN ${table2} ON ${on}`;
             return this;         
         }
-        this.query = this.query + ` JOIN ${table2} ON ${on}`
+        this.query = this.query + ` JOIN ${table2} ON ${on}`;
         return this;
     }
 
     insert(table){
-        this.query = `INSERT INTO ${table}(??) VALUES(?)`
+        this.query = `INSERT INTO ${table}(??) VALUES(?)`;
         return this;
     }
 
@@ -38,31 +43,38 @@ class QueryBuilder {
     }
 
     where(condition){
-        this.query = this.query + ' WHERE '+condition;
+        this.query = this.query + ' WHERE ?? = ?';
         return this;
     }
 
     update(table){
         // QueryBuilder
-        this.query = `Update ${table} set ?? = ? where mail = ?`;
+        this.query = `Update ${table} set ?? = ?`
+        return this;
+    }
+
+    additionalValue(){
+        // intended to add more value sets
+        this.query = this.query + ` ,?? = ?`;
         return this;
     }
 
     execute(data, callback){
         // Runner
         myConnection.getConnection( (error, connection)=>{
+            // Get connection and close after use
             if (error) {
-                console.log(error)
                 throw error;
             }
-            let formatted_query = connection.format(this.query, data)
+            let formatted_query = connection.format(this.query, data); 
             connection.query(
                 formatted_query, function(err, result){
                     if (err){
-                        console.log(err);
+                        // Release on error
                         connection.release();
                         return callback(err, null);
                     }
+                    // Release after result
                     connection.release();
                     return callback(null, JSON.parse(JSON.stringify(result)));
             });

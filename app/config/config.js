@@ -7,10 +7,11 @@ var mysql_config = {
 'port': process.env['MYSQL_'+env+'_PORT'],
 'user': process.env['MYSQL_'+env+'_USER'],
 'database': process.env['MYSQL_'+env+'_DATABASE'],
-'password': process.env['MYSQL_'+env+'_PASSWORD']
+'password': process.env['MYSQL_'+env+'_PASSWORD'],
+'connectionLimit':151
 }
 
-var table_names={
+var mysql_table_names={
     'student':'students',
     'teacher':'teachers',
     'register': 'registration'
@@ -18,5 +19,5 @@ var table_names={
 
 module.exports={
     'mysql':mysql_config,
-    'tables':table_names
+    'tables':mysql_table_names
 }

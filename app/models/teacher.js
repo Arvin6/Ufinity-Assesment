@@ -1,9 +1,11 @@
-import {_} from 'lodash'
-import db from '../db'
-import schemas from '../schema'
-import config from '../config'
-import Student from './student'
-import Registration from './register'
+import {_} from 'lodash';
+import db from '../db';
+import schemas from '../config/schema';
+import config from '../config/config';
+
+import UfinityError from './Customerror';
+import Student from './student';
+import Registration from './register';
 
 export default class Teacher {
     constructor(data) {
@@ -19,26 +21,23 @@ export default class Teacher {
 
     static async suspendStudent(studentMail) {
         let studentInstance = await Student.findByMail(studentMail)
-        console.log(studentInstance);
         if (studentInstance.data[schemas.students.isSuspended]){
-            throw `${studentMail} is already suspended.`
+            throw new UfinityError(`${studentMail} is already suspended.`);
         }
-        return studentInstance.suspend()
+        return studentInstance.suspend(true);
     }
 
-    static async findByMail(mailId) {
+    static findByMail(mailId) {
         // Returns a teacher object
-        return await new Promise((resolve, reject)=>{
+        return new Promise((resolve, reject)=>{
             let db_cn = new db();
             db_cn.findByAttribute(config.tables.teacher, schemas.teachers.mail)
                 .execute([mailId], (err, data) =>{
                     if (err) {
-                        console.log(err);
-                        return reject('Database error.')                        
+                        return reject(err)
                     }
                     if (data.length < 1) {
-                        console.log(data);
-                        return reject('Teacher '+mailId+' does not exist.')                                                
+                        return reject(new UfinityError('Teacher '+mailId+' does not exist.'));
                     }
                     let teacherInstance = new Teacher(data[0])
                     resolve(teacherInstance);
@@ -46,7 +45,7 @@ export default class Teacher {
             });
     }
 
-    async getMentions(mailText){
+    static async getMentions(mailText){
         let studentEmails = [];
         // Split and check
         let words = mailText.split(' ')
@@ -54,10 +53,12 @@ export default class Teacher {
             let pattern = /^@[a-zA-z0-9]+@[a-zA-Z0-9]+\.[A-Za-z0-9]+/g;
             let match = pattern.exec(word);
             if (match) {
-                let sanitizedWord = match[0].slice(1);
+                let sanitizedMail = match[0].slice(1);
                 try{
-                    await Student.findByMail(sanitizedWord);                    
-                    studentEmails.push(sanitizedWord);            
+                    let studentInstance = await Student.findByMail(sanitizedMail);                    
+                    if (!studentInstance.isSuspended){
+                        studentEmails.push(sanitizedMail);
+                    }
                 }catch(error){
                     console.log(error);
                 }
@@ -66,32 +67,30 @@ export default class Teacher {
         return studentEmails;
     }
 
-    async registerStudent(student) {
+    registerStudent(student) {
         // teacher is a Teacher instance
         let regData = {}
         let registration = schemas.registration;
-        regData[registration.teacher_id] = this.data[schemas.teachers.id]
-        regData[registration.student_id] = student.data[schemas.students.id]
-        return await new Registration(regData).register();
+        regData[registration.teacher_id] = this.data[schemas.teachers.id];
+        regData[registration.student_id] = student.data[schemas.students.id];
+        return new Registration(regData).register();
     }
 
     static async getRegisteredStudents(teacherEmail) {
+        await Teacher.findByMail(teacherEmail);        
         let students = await Registration.getRegisteredStudents(teacherEmail);
-        let studentMail = [];
         // Object to array
-        students.forEach((student)=>
-            studentMail.push(student[schemas.students.mail])
-        )
-        return studentMail;
+        students = _.map(students, _.property(schemas.students.mail));
+        return students;
     }
 
     static async findCommonStudents(teachersMailList) {
-        let registeredList = []
+        let registeredListPromise = []
         for (const mail of teachersMailList){
-            let students = Teacher.getRegisteredStudents(mail)
-            registeredList.push(students);
+            // Push promises to list
+            registeredListPromise.push(Teacher.getRegisteredStudents(mail));
         }
-        registeredList = await Promise.all([...registeredList])
+        let registeredList = await Promise.all([...registeredListPromise])
         return _.intersectionWith(...registeredList, _.isEqual);
     }
 }

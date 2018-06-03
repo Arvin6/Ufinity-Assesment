@@ -1,7 +1,9 @@
 import {_} from 'lodash'
 import db from '../db'
-import schemas from '../schema'
-import config from '../config'
+import schemas from '../config/schema'
+import config from '../config/config'
+import UfinityError from './Customerror';
+
 
 export default class Student {
     constructor(data) {
@@ -15,37 +17,35 @@ export default class Student {
         return _.pick(_.defaults(data, schema), _.keys(schema));
     }
 
-    async suspend() {
+    suspend(suspend) {
         // Suspend student
-        db_cn = new db();
-        this.data[schemas.students.isSuspended] = true;
-        return await new Promise( (resolve, reject) =>{
+        let db_cn = new db();
+        this.data[schemas.students.isSuspended] = suspend;
+        return new Promise( (resolve, reject) =>{
             db_cn.update(config.tables.student)
-                .execute( [schemas.students.isSuspended,true,
-                    this.data[schemas.students.mail]],
+                .where()
+                .execute( [schemas.students.isSuspended, true, `${schemas.students.mail}`, `${this.data[schemas.students.mail]}`],
                         (error, result)=>{
                             if (error){
-                                console.log(error);
-                                return reject('Unable to suspend the student');
+                                return reject(error);
                             }
                             resolve(result)
                         });
         });
     }
 
-    static async findByMail(mailId) {
+    static findByMail(mailId) {
         // Returns a Student object
-        return await new Promise((resolve, reject)=>{
+        return new Promise((resolve, reject)=>{
             let db_cn = new db();
             db_cn.findByAttribute(config.tables.student, schemas.students.mail)
                     .execute([mailId], (err, data) => {
                         if (err){
                             console.log(err);
-                            return reject('Database error.');                        
+                            return reject(err);                        
                         }
-                        if (data.length < 1) {
-                            console.log(data);                            
-                            return reject('Student '+mailId+' does not exist.');                                                        
+                        if (data.length < 1) {           
+                            return reject(new UfinityError('Student '+mailId+' does not exist.'));
                         }
                         let sInstance = new Student(data[0]);
                         resolve(sInstance);
