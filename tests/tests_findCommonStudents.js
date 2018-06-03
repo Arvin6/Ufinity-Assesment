@@ -72,7 +72,6 @@ describe('Find common students', ()=> {
             .get(endpoint)
             .query(data)
             .end((err, res)=>{
-                console.log(res.body.students);
                 chai.expect(err).to.be.null;
                 chai.expect(res.status).to.equal(200);
                 chai.expect(res.body.students).to.be.an('array');

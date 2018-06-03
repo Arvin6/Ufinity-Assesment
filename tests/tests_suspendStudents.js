@@ -16,26 +16,26 @@ let valid_student2 = 'teststudent4@school2.com';
 
 describe('Suspend student - /api/suspend', () => {
     // Push data before use
-    before((done)=> {
+    // before((done)=> {
     //Caution: Uncomment only if you need to populate the DB, or it may cause unnecessary failures
         // new queryBuilder().insert(constant.tables.student).execute(
         //     [[schemas.students.mail, schemas.students.isSuspended], [valid_student2, false]],
         //     function(err, res){
         //         if (err) throw err;
         // })
-        done();
-    })
+    //     done();
+    // })
     
     after((done)=>{
-        // Un-suspend the suspended student to reenable testing for next time
+        // Un-suspend the suspended student for next run
     new queryBuilder().update(constant.tables.student, schemas.students.isSuspended, 0)
                         .where()
                         .execute(
                             [schemas.students.mail, valid_student2],
                             function(err, res){
                                 if (err) {throw err.sql};
-                                done();            
                             })
+    done();        
 })
 
     it('Suspend valid student', (done)=>{

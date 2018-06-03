@@ -4,8 +4,8 @@
   "description": "Assignment for ufinity",
   "main": "server.js",
   "scripts": {
-    "test": " NODE_ENV=TEST node_modules/mocha/bin/mocha --compilers js:babel-register tests/tests*.js",
-    "start": " NODE_ENV=DEV nodemon --exec babel-node bin/www --presets es2015 stage 2"
+    "test": " NODE_ENV=TEST node_modules/mocha/bin/mocha --exit --compilers js:babel-register tests/tests*.js",
+    "start": " NODE_ENV=DEV node bin/www --presets es2015 stage 2"
   },
   "author": "Arvind Natarajan",
   "license": "MIT",
