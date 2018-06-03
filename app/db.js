@@ -42,20 +42,18 @@ class QueryBuilder {
         return this;
     }
 
-    where(condition){
+    where(){
         this.query = this.query + ' WHERE ?? = ?';
         return this;
     }
 
-    update(table){
+    update(table, column, value){
         // QueryBuilder
-        this.query = `Update ${table} set ?? = ?`
+        this.query = `Update ${table} set ${column} = ${value}`
         return this;
     }
-
-    additionalValue(){
-        // intended to add more value sets
-        this.query = this.query + ` ,?? = ?`;
+    and(){
+        this.query = this.query + ' AND ??=?'
         return this;
     }
 

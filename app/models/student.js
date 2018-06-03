@@ -17,14 +17,14 @@ export default class Student {
         return _.pick(_.defaults(data, schema), _.keys(schema));
     }
 
-    suspend(suspend) {
+    async suspend(suspend) {
         // Suspend student
         let db_cn = new db();
         this.data[schemas.students.isSuspended] = suspend;
-        return new Promise( (resolve, reject) =>{
-            db_cn.update(config.tables.student)
+        return await new Promise( (resolve, reject) =>{
+            db_cn.update(config.tables.student, schemas.students['isSuspended'], true)
                 .where()
-                .execute( [schemas.students.isSuspended, true, `${schemas.students.mail}`, `${this.data[schemas.students.mail]}`],
+                .execute( [`${schemas.students.mail}`, `${this.data[schemas.students.mail]}`],
                         (error, result)=>{
                             if (error){
                                 return reject(error);
@@ -41,7 +41,6 @@ export default class Student {
             db_cn.findByAttribute(config.tables.student, schemas.students.mail)
                     .execute([mailId], (err, data) => {
                         if (err){
-                            console.log(err);
                             return reject(err);                        
                         }
                         if (data.length < 1) {           

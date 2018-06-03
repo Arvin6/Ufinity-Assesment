@@ -43,12 +43,12 @@ router.get('/commonstudents',async function(req, res, next){
     try{
         //Sanitize input
         if (!teachersMailList){
-            throw new UfinityError('Field teacher cannot be empty');
+            throw new UfinityError('Field teacher cannot be empty.');
         }
         teachersMailList = !(teachersMailList instanceof Array)?Array(teachersMailList):teachersMailList
         for (const mail of teachersMailList){
             if (!mail || !validateMail(mail)){
-                throw new UfinityError(`Invalid teacher mail`)
+                throw new UfinityError(`Teacher mail ${mail} is invalid.`)
             }
         }
         let studentList = await Teacher.findCommonStudents(teachersMailList);
@@ -64,16 +64,12 @@ router.post('/retrievefornotifications', async function(req, res, next) {
     
     try {
         if (!mailText){
-            throw new UfinityError(`notification cannot be empty.`)
+            throw new UfinityError(`Notification cannot be empty.`)
         }
         if (!teacherMailId || !validateMail(teacherMailId)){
-            throw new UfinityError(`Teacher mail is invalid.`)
+            throw new UfinityError(`Teacher mail ${teacherMailId} is invalid.`)
         }
-        // Get promises
-        let studentMentions = await Teacher.getMentions(mailText);
-        let studentRegistrations = await Teacher.getRegisteredStudents(teacherMailId);
-        // Get only unique mails
-        let studentEmails = new Set([...studentMentions,...studentRegistrations]);
+        let studentEmails = await Teacher.getNotificationList(mailText, teacherMailId);
         return res.status(200).send(
             {'recipients' : studentEmails}
         );
@@ -87,7 +83,7 @@ router.post('/suspend',async function(req, res, next) {
     let studentMail = req.body.student;
     try {
         if (!studentMail || !(typeof(studentMail) === 'string') || !validateMail(studentMail)){
-            throw new UfinityError(`Student mail is invalid.`)
+            throw new UfinityError(`Student mail ${studentMail} is invalid.`)
         }
         await Teacher.suspendStudent(studentMail);
         return res.status(204).send();

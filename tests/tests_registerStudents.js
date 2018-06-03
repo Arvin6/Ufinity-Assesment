@@ -7,41 +7,43 @@ import server from '../app';
 import queryBuilder from '../app/db';
 import constant from '../app/config/config';
 
+let endpoint = '/api/register'
 chai.use(chaiHttp);
 
-let valid_student = 'teststudent@school2.com';
+let valid_student = 'teststudent1@school2.com';
 let valid_student2 = 'teststudent2@school2.com';
-let valid_teacher = 'testteacher@school2.com';
+let valid_student3 = 'teststudent3@school2.com'
+let valid_teacher = 'testteacher1@school2.com';
+let valid_teacher3 = 'testteacher3@school2.com';
 
 describe('Register students to teacher /api/register', () => {
     // Push data before use
     before(async (done)=> {
-        new queryBuilder().insert(constant.tables.student).execute(
-                [[schemas.students.mail, schemas.students.isSuspended], [valid_student, false]],
-                function(err, res){
-                    if (err) throw err;
-        });
-        new queryBuilder().insert(constant.tables.student).execute(
-            [[schemas.students.mail, schemas.students.isSuspended], [valid_student2, false]],
-            function(err, res){
-                if (err) throw err;
-        })
-        new queryBuilder().insert(constant.tables.teacher).execute(
-            [schemas.teachers.mail, valid_teacher],
-            function(err, res){
-                if (err) throw err;    
-        });
-        done();
-    })
-    
-    // Clear the data after use
-    after((done) => {
-        new queryBuilder().delete(constant.tables.register).execute(null, function(err, res){
-            if (err) throw err;});
-        new queryBuilder().delete(constant.tables.student).execute(null, function(err, res){
-            if (err) throw err;});
-        new queryBuilder().delete(constant.tables.teacher).execute(null, function(err, res){
-            if (err) throw err;});
+        // new queryBuilder().insert(constant.tables.student).execute(
+        //         [[schemas.students.mail, schemas.students.isSuspended], [valid_student, false]],
+        //         function(err, res){
+        //             if (err) throw err;
+        // });
+        // new queryBuilder().insert(constant.tables.student).execute(
+        //             [[schemas.students.mail, schemas.students.isSuspended], [valid_student3, true]],
+        //             function(err, res){
+        //                 if (err) throw err;
+        //     });
+        // new queryBuilder().insert(constant.tables.student).execute(
+        //     [[schemas.students.mail, schemas.students.isSuspended], [valid_student2, false]],
+        //     function(err, res){
+        //         if (err) throw err;
+        // })
+        // new queryBuilder().insert(constant.tables.teacher).execute(
+        //     [schemas.teachers.mail, valid_teacher],
+        //     function(err, res){
+        //         if (err) throw err;    
+        // });
+        // new queryBuilder().insert(constant.tables.teacher).execute(
+        //     [schemas.teachers.mail, valid_teacher3],
+        //     function(err, res){
+        //         if (err) throw err;    
+        // });
         done();
     })
 
@@ -52,7 +54,7 @@ describe('Register students to teacher /api/register', () => {
             'jackmiller@school1.com'
             ]}
         chai.request(server)
-            .post('/api/register')
+            .post(endpoint)
             .send(data)
             .end((err, res)=>{
                 chai.expect(err, null);
@@ -68,7 +70,7 @@ describe('Register students to teacher /api/register', () => {
             'students': [valid_student]
         }
         chai.request(server)
-            .post('/api/register')
+            .post(endpoint)
             .send(data)
             .end((err, res)=>{
                 chai.expect(err, null);
@@ -86,7 +88,7 @@ describe('Register students to teacher /api/register', () => {
             'jaymill@school1.com'
         ]}
         chai.request(server)
-            .post('/api/register')
+            .post(endpoint)
             .send(data)
             .end((err, res)=>{
                 chai.expect(err, null);
@@ -103,7 +105,41 @@ describe('Register students to teacher /api/register', () => {
                 valid_student
         ]}
         chai.request(server)
-            .post('/api/register')
+            .post(endpoint)
+            .send(data)
+            .end((err, res)=>{
+                chai.expect(err, null);
+                chai.expect(res).to.have.a.property('status',204);
+                chai.expect(res.body).to.be.empty;                    
+                done();            
+            })
+    })
+    
+    it('Register valid student to different valid teacher', (done) => {
+        let data = {
+            'teacher': valid_teacher3,
+            'students': [
+                valid_student
+        ]}
+        chai.request(server)
+            .post(endpoint)
+            .send(data)
+            .end((err, res)=>{
+                chai.expect(err, null);
+                chai.expect(res).to.have.a.property('status',204);
+                chai.expect(res.body).to.be.empty;                    
+                done();            
+            })
+    })
+
+    it('Register suspended student to valid teacher', (done) => {
+        let data = {
+            'teacher': valid_teacher,
+            'students': [
+                valid_student3
+        ]}
+        chai.request(server)
+            .post(endpoint)
             .send(data)
             .end((err, res)=>{
                 chai.expect(err, null);
@@ -119,7 +155,7 @@ describe('Register students to teacher /api/register', () => {
                 valid_student, valid_student2
         ]}
         chai.request(server)
-            .post('/api/register')
+            .post(endpoint)
             .send(data)
             .end((err, res)=>{
                 chai.expect(err).to.be.null;
@@ -135,7 +171,7 @@ describe('Register students to teacher /api/register', () => {
                 valid_student, valid_student2
         ]}
         chai.request(server)
-            .post('/api/register')
+            .post(endpoint)
             .send(data)
             .end((err, res)=>{
                 chai.expect(err).to.be.null;
@@ -151,7 +187,7 @@ describe('Register students to teacher /api/register', () => {
                 valid_student, 'invalid_mailformat'
         ]}
         chai.request(server)
-            .post('/api/register')
+            .post(endpoint)
             .send(data)
             .end((err, res)=>{
                 chai.expect(err).to.be.null;
@@ -166,7 +202,7 @@ describe('Register students to teacher /api/register', () => {
             'students': valid_student
             }
         chai.request(server)
-            .post('/api/register')
+            .post(endpoint)
             .send(data)
             .end((err, res)=>{
                 chai.expect(err).to.be.null;
@@ -177,68 +213,3 @@ describe('Register students to teacher /api/register', () => {
     })
     
 });
-
-describe('/api/suspend', () => {
-    // Push data before use
-    before(async (done)=> {
-        new queryBuilder().insert(constant.tables.student).execute(
-                [[schemas.students.mail, schemas.students.isSuspended], [valid_student, true]],
-                function(err, res){
-                    if (err) throw err;
-        });
-        new queryBuilder().insert(constant.tables.student).execute(
-            [[schemas.students.mail, schemas.students.isSuspended], [valid_student2, false]],
-            function(err, res){
-                if (err) throw err;
-        })
-        new queryBuilder().insert(constant.tables.teacher).execute(
-            [schemas.teachers.mail, valid_teacher],
-            function(err, res){
-                if (err) throw err;    
-        });
-        done();
-    })
-    
-    // Clear the data after use
-    after((done) => {
-        new queryBuilder().delete(constant.tables.register).execute(null, function(err, res){
-            if (err) throw err;});
-        new queryBuilder().delete(constant.tables.student).execute(null, function(err, res){
-            if (err) throw err;});
-        new queryBuilder().delete(constant.tables.teacher)
-            .execute(null, function(err, res){
-                if (err) throw err;});
-        done();
-    })
-
-    it('Suspend non existing students', (done)=>{
-        let data = {
-            'student': valid_student2
-        };
-        chai.request(server)
-            .post('/api/suspend')
-            .send(data)
-            .end((err, res)=>{
-                console.log(err, res.body);
-                chai.expect(err).to.be.null;
-                chai.expect(res).to.have.a.property('status',204);
-                chai.expect(res.body).to.be.empty;                    
-                done();            
-            })
-    })
-    it('Suspend already suspended students', (done)=>{
-        let data = {
-            'student': valid_student
-        };
-        chai.request(server)
-            .post('/api/suspend')
-            .send(data)
-            .end((err, res)=>{
-                console.log(err, res.body);
-                chai.expect(err).to.be.null;
-                chai.expect(res).to.have.a.property('status',400);
-                chai.expect(res.body).to.be.an('object').that.has.a.property('errors',data.student+' is already suspended.');                    
-                done();            
-            })
-    })
-})

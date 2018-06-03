@@ -60,7 +60,7 @@ export default class Teacher {
                         studentEmails.push(sanitizedMail);
                     }
                 }catch(error){
-                    console.log(error);
+                    // console.log(error);
                 }
             }
         }
@@ -74,6 +74,12 @@ export default class Teacher {
         regData[registration.teacher_id] = this.data[schemas.teachers.id];
         regData[registration.student_id] = student.data[schemas.students.id];
         return new Registration(regData).register();
+    }
+
+    static async getNotificationList(mailText, teacherMailId){
+        let studentMentions = await Teacher.getMentions(mailText);
+        let Registrations = await Teacher.getRegisteredStudents(teacherMailId);
+        return _.union(studentMentions, Registrations);
     }
 
     static async getRegisteredStudents(teacherEmail) {

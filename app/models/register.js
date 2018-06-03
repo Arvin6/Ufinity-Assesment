@@ -71,12 +71,11 @@ export default class Registration {
                     .joinTables(registerTable, studentTable, studentOnCondition, null)
                         .where()
                             .and()
-                            .additionalValues()
-                            .execute([`${teacherTable}.${teacherMailColumn}`,`${teacherMailId}`, `${studentTable}.${studentIsSuspended}`, false],
+                            .execute([`${teacherTable}.${teacherMailColumn}`,`${teacherMailId}`,
+                                     `${studentTable}.${studentIsSuspended}`, false],
                                  function (error, result){
                                     if (error){
-                                        console.log(error);
-                                        return reject('There was a problem getting registered students.');
+                                        return reject(error);
                                     }
                                 resolve(result);
                             });
