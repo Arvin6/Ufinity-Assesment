@@ -1,9 +1,13 @@
+require('dotenv').config();
+
+let env = process.env.NODE_ENV
+
 var mysql_config = {
-'host': 'localhost',
-'port': 3306,
-'user': 'ufinity',
-'database': 'UfinityDb',
-'password': 'U51n17yDbPa$sword'
+'host': process.env['MYSQL_'+env+'_HOST'],
+'port': process.env['MYSQL_'+env+'_PORT'],
+'user': process.env['MYSQL_'+env+'_USER'],
+'database': process.env['MYSQL_'+env+'_DATABASE'],
+'password': process.env['MYSQL_'+env+'_PASSWORD']
 }
 
 var table_names={

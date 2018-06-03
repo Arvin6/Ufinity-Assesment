@@ -4,8 +4,8 @@
   "description": "Assignment for ufinity",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node bin/www --presets es2015 stage 2"
+    "test": " NODE_ENV=TEST echo \"Error: no test specified\" && exit 1",
+    "start": " NODE_ENV=DEV nodemon --exec babel-node bin/www --presets es2015 stage 2"
   },
   "author": "Arvind Natarajan",
   "license": "MIT",
@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
-    "babel-preset-es2017": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "dotenv": "^6.0.0"
   }
