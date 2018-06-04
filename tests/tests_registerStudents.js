@@ -16,9 +16,10 @@ let valid_student3 = 'teststudent3@school2.com'
 let valid_teacher = 'testteacher1@school2.com';
 let valid_teacher3 = 'testteacher3@school2.com';
 
+let ids_to_delete = [];
 describe('Register students to teacher /api/register', () => {
     // Push data before use
-    before(async (done)=> {
+    before((done)=> {
         // new queryBuilder().insert(constant.tables.student).execute(
         //         [[schemas.students.mail, schemas.students.isSuspended], [valid_student, false]],
         //         function(err, res){
@@ -47,73 +48,40 @@ describe('Register students to teacher /api/register', () => {
         done();
     })
 
-    it('Register non-existing student to teacher - Return 400', (done)=>{
-        let data = {
-            'teacher': 'teacherclaire@school1.com',
-            'students': [
-            'jackmiller@school1.com'
-            ]}
-        chai.request(server)
-            .post(endpoint)
-            .send(data)
-            .end((err, res)=>{
-                chai.expect(err, null);
-                chai.expect(res.status, 400);
-                chai.expect(res.body instanceof Object);
-                chai.expect(res.body.errors === `Student ${data.students[0]} does not exist`)
-                done();
-            })
-        })
-    it('Register valid student to non-existing teacher', (done) => {
-        let data = {
-            'teacher': 'teacherX@school1.com',
-            'students': [valid_student]
-        }
-        chai.request(server)
-            .post(endpoint)
-            .send(data)
-            .end((err, res)=>{
-                chai.expect(err, null);
-                chai.expect(res.status, 400);
-                chai.expect(res.body instanceof Object);                    
-                chai.expect(res.body.errors === `Teacher ${data.teacher} does not exist.`)
-                done();
-            })
-        })
-    it('Register multiple invalid students to valid teacher', (done) => {
+    it('Register multiple valid students to valid teacher', (done) => {
         let data = {
             'teacher': valid_teacher,
             'students': [
-            'jackmiller@school1.com',
-            'jaymill@school1.com'
+                valid_student, valid_student2
         ]}
         chai.request(server)
             .post(endpoint)
             .send(data)
             .end((err, res)=>{
-                chai.expect(err, null);
-                chai.expect(res).to.have.a.property('status', 400);
-                chai.expect(res.body instanceof Object);                    
-                chai.expect(res.body.errors === `Student ${data.students[0]} does not exist.`)
-                done();            
-            })
-    })    
-    it('Register valid student to valid teacher', (done) => {
-        let data = {
-            'teacher': valid_teacher,
-            'students': [
-                valid_student
-        ]}
-        chai.request(server)
-            .post(endpoint)
-            .send(data)
-            .end((err, res)=>{
-                chai.expect(err, null);
-                chai.expect(res).to.have.a.property('status',204);
-                chai.expect(res.body).to.be.empty;                    
+                chai.expect(err).to.be.null;
+                chai.expect(res.status).to.be.greaterThan(199);    
                 done();            
             })
     })
+
+    it('Register already existing relations', (done) => {
+        let data = {
+            'teacher': valid_teacher,
+            'students': [
+                valid_student,
+                valid_student2
+        ]}
+        chai.request(server)
+            .post(endpoint)
+            .send(data)
+            .end((err, res)=>{
+                chai.expect(err, null);
+                chai.expect(res.status).to.be.greaterThan(199);
+                chai.expect(res.body instanceof Object);
+                chai.expect(res.body.ignored).deep.equal([`Student ${valid_student} is already registered to ${valid_teacher}`, `Student ${valid_student2} is already registered to ${valid_teacher}`]);
+                done();            
+            })
+    })  
     
     it('Register valid student to different valid teacher', (done) => {
         let data = {
@@ -126,44 +94,12 @@ describe('Register students to teacher /api/register', () => {
             .send(data)
             .end((err, res)=>{
                 chai.expect(err, null);
-                chai.expect(res).to.have.a.property('status',204);
-                chai.expect(res.body).to.be.empty;                    
+                chai.expect(res.status).to.be.greaterThan(199);  
                 done();            
             })
     })
 
-    it('Register suspended student to valid teacher', (done) => {
-        let data = {
-            'teacher': valid_teacher,
-            'students': [
-                valid_student3
-        ]}
-        chai.request(server)
-            .post(endpoint)
-            .send(data)
-            .end((err, res)=>{
-                chai.expect(err, null);
-                chai.expect(res).to.have.a.property('status',204);
-                chai.expect(res.body).to.be.empty;                    
-                done();            
-            })
-    })
-    it('Register multiple valid students to valid teacher', (done) => {
-        let data = {
-            'teacher': valid_teacher,
-            'students': [
-                valid_student, valid_student2
-        ]}
-        chai.request(server)
-            .post(endpoint)
-            .send(data)
-            .end((err, res)=>{
-                chai.expect(err).to.be.null;
-                chai.expect(res).to.have.a.property('status',204);
-                chai.expect(res.body).to.be.empty;                    
-                done();            
-            })
-    })
+    
     it('Reject invalid mail format - teacher', (done) => {
         let data = {
             'teacher': 'invalid_teacher_mail',
@@ -180,6 +116,7 @@ describe('Register students to teacher /api/register', () => {
             })
             done();            
     })
+
     it('Reject invalid mail format - student', (done) => {
         let data = {
             'teacher': valid_teacher,
@@ -196,7 +133,8 @@ describe('Register students to teacher /api/register', () => {
             })
             done();            
     })
-    it('Register a valid student to a valid teacher', (done) => {
+
+    it('Register a valid student as string to a valid teacher', (done) => {
         let data = {
             'teacher': valid_teacher,
             'students': valid_student

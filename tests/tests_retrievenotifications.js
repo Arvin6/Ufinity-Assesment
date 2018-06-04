@@ -23,7 +23,7 @@ let valid_student1 = 'teststudent5@school2.com';
 // let valid_teacher2 = 'testteacher4@school2.com';
 
 describe(' Retrieve notification - /api/retrievefornotification', () => {
-        before(async (done)=> {
+        before( (done)=> {
             // new queryBuilder().update(constant.tables.student).execute(
             //         [[schemas.students.mail, schemas.students.isSuspended], [valid_student1, true]],
             //         function(err, res){

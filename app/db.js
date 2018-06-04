@@ -64,7 +64,7 @@ class QueryBuilder {
             if (error) {
                 throw error;
             }
-            let formatted_query = connection.format(this.query, data); 
+            let formatted_query = connection.format(this.query, data);
             connection.query(
                 formatted_query, function(err, result){
                     if (err){

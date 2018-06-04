@@ -39,10 +39,37 @@ export default class Teacher {
                     if (data.length < 1) {
                         return reject(new UfinityError('Teacher '+mailId+' does not exist.'));
                     }
-                    let teacherInstance = new Teacher(data[0])
+                    let teacherInstance = new Teacher(data[0]);
                     resolve(teacherInstance);
                 })
             });
+    }
+
+    save(){
+        let db_cn = new db();
+        return new Promise((resolve, reject)=>{
+            db_cn.insert(config.tables.teacher)
+                .execute([schemas.teachers.mail, this.data[schemas.teachers.mail]]
+                    , function(err, res){
+                        if (err) return reject(err);
+                        resolve(res.insertId);
+                })
+        })
+    }
+
+    static async getInstance(teacherMail){
+        try{
+            let teacherInstance = await Teacher.findByMail(teacherMail);
+            return teacherInstance;
+        }
+        catch(error){
+            console.log(error);
+            let teacherData = {}
+            teacherData[schemas.teachers.mail] = teacherMail;
+            let teacherInstance = new Teacher(teacherData);
+            teacherInstance.data[schemas.teachers.id] = teacherInstance.save()
+            return teacherInstance;
+        }
     }
 
     static async getMentions(mailText){
@@ -67,13 +94,13 @@ export default class Teacher {
         return studentEmails;
     }
 
-    registerStudent(student) {
-        // teacher is a Teacher instance
+    async registerStudent(studentMail) {
+        let studentInstance = await Student.getInstance(studentMail);
         let regData = {}
         let registration = schemas.registration;
         regData[registration.teacher_id] = this.data[schemas.teachers.id];
-        regData[registration.student_id] = student.data[schemas.students.id];
-        return new Registration(regData).register();
+        regData[registration.student_id] = studentInstance.data[schemas.students.id];
+        return await new Registration(regData).register();
     }
 
     static async getNotificationList(mailText, teacherMailId){

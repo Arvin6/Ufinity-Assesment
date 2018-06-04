@@ -17,6 +17,32 @@ export default class Student {
         return _.pick(_.defaults(data, schema), _.keys(schema));
     }
 
+    static async getInstance(mail){
+        try{
+            // Check if existing student
+            return await Student.findByMail(mail);
+        } catch(error) {
+            // Create new student instance
+            let studentData = {}
+            studentData[schemas.students.mail] = mail
+            let studentInstance = new Student(studentData)
+            studentInstance.data[schemas.students.id] = await studentInstance.save();
+            return studentInstance;
+        }
+    }
+
+    save(){
+        let db_cn = new db();
+        return new Promise((resolve, reject)=>{
+            db_cn.insert(config.tables.student)
+                .execute([schemas.students.mail, this.data[schemas.students.mail]],
+                     function(err, res){
+                        if (err) return reject(err);
+                        resolve(res.insertId);
+                    })
+                });
+        }
+
     async suspend(suspend) {
         // Suspend student
         let db_cn = new db();

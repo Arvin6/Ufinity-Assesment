@@ -29,9 +29,9 @@ export default class Registration {
                           teacher_id.toString(), this.data[teacher_id] ],
                             (error, result) =>{
                                 if (error) {
-                                return reject(new UfinityError(`Student cannnot be registered to teacher`));
+                                return reject(error);
                             }
-                                resolve (result);
+                                resolve (result.insertId);
                         });
         });
     }

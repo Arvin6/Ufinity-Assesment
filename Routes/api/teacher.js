@@ -26,14 +26,22 @@ router.post('/register',async function(req, res, next){
                 throw new UfinityError(`Invalid mail format ${mail || null}`)
             }
         }
-        let teacherInstance = await Teacher.findByMail(teacherMail);
+        let teacherInstance = await Teacher.getInstance(teacherMail);
+        let existingRegistration = [];
         for (const mail of studentsMailList) {
-            let studentInstance = await Student.findByMail(mail);
-            await teacherInstance.registerStudent(studentInstance)
+            let result = await teacherInstance.registerStudent(mail)
+            if (result === 0){
+                existingRegistration
+                    .push( `Student ${mail} is already registered to ${teacherMail}`);
+            }
+        }
+        if (existingRegistration.length > 0){
+            return res.status(200).send({'ignored':existingRegistration});
         }
         return res.status(204).send()
     }
     catch(error){
+        
         return next(error)
     }
 });
@@ -45,7 +53,9 @@ router.get('/commonstudents',async function(req, res, next){
         if (!teachersMailList){
             throw new UfinityError('Field teacher cannot be empty.');
         }
-        teachersMailList = !(teachersMailList instanceof Array)?Array(teachersMailList):teachersMailList
+        teachersMailList = !(teachersMailList instanceof Array)
+                                    ?Array(teachersMailList)
+                                                :teachersMailList
         for (const mail of teachersMailList){
             if (!mail || !validateMail(mail)){
                 throw new UfinityError(`Teacher mail ${mail} is invalid.`)
