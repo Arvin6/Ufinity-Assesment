@@ -63,11 +63,10 @@ export default class Teacher {
             return teacherInstance;
         }
         catch(error){
-            console.log(error);
             let teacherData = {}
             teacherData[schemas.teachers.mail] = teacherMail;
             let teacherInstance = new Teacher(teacherData);
-            teacherInstance.data[schemas.teachers.id] = teacherInstance.save()
+            teacherInstance.data[schemas.teachers.id] = await teacherInstance.save()
             return teacherInstance;
         }
     }
