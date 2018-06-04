@@ -59,7 +59,7 @@ describe('Register students to teacher /api/register', () => {
             .send(data)
             .end((err, res)=>{
                 chai.expect(err).to.be.null;
-                chai.expect(res.status).to.be.greaterThan(199);    
+                chai.expect(res.status).to.be.at.most(204);    
                 done();            
             })
     })
@@ -76,7 +76,7 @@ describe('Register students to teacher /api/register', () => {
             .send(data)
             .end((err, res)=>{
                 chai.expect(err, null);
-                chai.expect(res.status).to.be.greaterThan(199);
+                chai.expect(res.status).to.be.at.most(204);
                 chai.expect(res.body instanceof Object);
                 chai.expect(res.body.ignored).deep.equal([`Student ${valid_student} is already registered to ${valid_teacher}`, `Student ${valid_student2} is already registered to ${valid_teacher}`]);
                 done();            
@@ -94,7 +94,7 @@ describe('Register students to teacher /api/register', () => {
             .send(data)
             .end((err, res)=>{
                 chai.expect(err, null);
-                chai.expect(res.status).to.be.greaterThan(199);  
+                chai.expect(res.status).to.be.at.most(204);  
                 done();            
             })
     })
