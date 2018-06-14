@@ -96,7 +96,9 @@ router.post('/suspend',async function(req, res, next) {
             throw new UfinityError(`Student mail ${studentMail} is invalid.`)
         }
         await Teacher.suspendStudent(studentMail);
-        return res.status(204).send();
+        return res.status(200).send(
+            {"message": `Suspended ${studentMail}`}
+        );
     }catch(error) {
         next(error);
     }

@@ -47,8 +47,8 @@ describe('Suspend student - /api/suspend', () => {
             .send(data)
             .end((err, res)=>{
                 chai.expect(err).to.be.null;
-                chai.expect(res).to.have.a.property('status',204);
-                chai.expect(res.body).to.be.empty;                    
+                chai.expect(res).to.have.a.property('status',200);
+                chai.expect(res.body).to.be.an("object").that.has.a.property('message',`Suspended ${valid_student2}`);                    
                 done();            
             })
     })
