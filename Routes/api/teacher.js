@@ -7,7 +7,7 @@ import UfinityError from '../../app/models/Customerror';
 var router = express.Router()
 
 const validateMail = function(mailId){
-    const emailPattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
+    const emailPattern = /[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?/g;
     return emailPattern.test(mailId);
 }
 
